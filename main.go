@@ -2,13 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/jasontconnell/dirs/commands"
-
-	"github.com/pkg/errors"
 )
 
 var cmds map[string]commands.Command
@@ -16,6 +15,8 @@ var cmds map[string]commands.Command
 func init() {
 	cmds = make(map[string]commands.Command)
 	installCommand("clearequal", commands.ClearEqual{})
+	installCommand("clearside", commands.ClearSide{})
+	installCommand("clearempty", commands.ClearEmpty{})
 }
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	// two dirs
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "getting current working directory"))
+		log.Fatal(fmt.Errorf("getting current working directory. %w", err))
 	}
 	left := getDir(cwd, flag.Arg(0))
 	right := getDir(cwd, flag.Arg(1))
@@ -33,13 +34,13 @@ func main() {
 	cmdinst, ok := cmds[*c]
 
 	if !ok {
-		log.Fatal(errors.Wrapf(errors.New("command not defined"), "command: %s", *c))
+		log.Fatal(fmt.Errorf("command not defined %s", *c))
 	}
 
 	result := cmdinst.Run(left, right)
 
 	if result.Error != nil {
-		log.Fatal(errors.Wrapf(result.Error, "executing %s", *c))
+		log.Fatal(fmt.Errorf("executing %s", *c))
 	} else {
 		log.Printf("%s: success. affected: %d\n", *c, result.Affected)
 	}

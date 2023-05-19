@@ -1,13 +1,10 @@
 package commands
 
-import (
-	"os"
-	"path/filepath"
-
-	"github.com/pkg/errors"
-)
-
 type ClearEqual struct{}
+
+func (c ClearEqual) Description() string {
+	return "Given two directories, remove the files that are equal, using a hash algorithm to ensure exact equal content."
+}
 
 func (c ClearEqual) Run(left, right string) Result {
 	res := Result{}
@@ -36,24 +33,11 @@ func (c ClearEqual) Run(left, right string) Result {
 		}
 	}
 
-	err := removeFiles(dellist, left, right)
+	err := removeItems(dellist, left, right)
 
 	res.Error = err
 	res.Success = err == nil
 	res.Affected = len(dellist)
 
 	return res
-}
-
-func removeFiles(relpaths []string, left, right string) error {
-	for _, p := range relpaths {
-		for _, d := range []string{left, right} {
-			fullPath := filepath.Join(d, p)
-			err := os.Remove(fullPath)
-			if err != nil {
-				return errors.Wrapf(err, "deleting file %s", fullPath)
-			}
-		}
-	}
-	return nil
 }
